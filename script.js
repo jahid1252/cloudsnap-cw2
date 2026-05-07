@@ -1,85 +1,69 @@
-const uploadForm = document.getElementById("uploadForm");
-const gallery = document.getElementById("gallery");
+const form = document.getElementById("uploadForm");
+const imageList = document.getElementById("imageList");
 
-async function loadImages() {
+async function fetchImages() {
 
-    const res = await fetch("http://localhost:5000/api/images");
+    const response = await fetch("http://localhost:5000/api/images");
+    const images = await response.json();
 
-    const images = await res.json();
-
-    gallery.innerHTML = "";
+    imageList.innerHTML = "";
 
     images.forEach(image => {
 
-        gallery.innerHTML += `
-        
-        <div class="card">
+        imageList.innerHTML += `
+            <div class="card">
 
-            <img src="${image.imageUrl}" />
+                <img src="${image.imageUrl}" width="250">
 
-            <h3>${image.title}</h3>
+                <h3>${image.title}</h3>
 
-            <button onclick="editImage(${image.id})">
-                ✏️ Edit
-            </button>
+                <button onclick="editImage(${image.id})">
+                    Edit
+                </button>
 
-            <button onclick="deleteImage(${image.id})">
-                🗑 Delete
-            </button>
+                <button onclick="deleteImage(${image.id})">
+                    Delete
+                </button>
 
-        </div>
+            </div>
         `;
     });
 }
 
-uploadForm.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
+    const title = document.getElementById("title").value;
+    const image = document.getElementById("image").files[0];
+
     const formData = new FormData();
 
-    formData.append(
-        "title",
-        document.getElementById("title").value
-    );
-
-    formData.append(
-        "image",
-        document.getElementById("image").files[0]
-    );
+    formData.append("title", title);
+    formData.append("image", image);
 
     await fetch("http://localhost:5000/api/images", {
         method: "POST",
         body: formData
     });
 
-    alert("✅ Image uploaded successfully");
+    form.reset();
 
-    uploadForm.reset();
-
-    loadImages();
+    fetchImages();
 });
 
 async function deleteImage(id) {
-
-    const confirmDelete = confirm(
-        "Are you sure you want to delete this image?"
-    );
-
-    if (!confirmDelete) return;
 
     await fetch(`http://localhost:5000/api/images/${id}`, {
         method: "DELETE"
     });
 
-    loadImages();
+    fetchImages();
 }
 
 async function editImage(id) {
 
-    const newTitle = prompt(
-        "Enter new image title"
-    );
+    const newTitle = prompt("Enter new image title:");
 
     if (!newTitle) return;
 
@@ -96,9 +80,7 @@ async function editImage(id) {
         })
     });
 
-    alert("✅ Title updated");
-
-    loadImages();
+    fetchImages();
 }
 
-loadImages();
+fetchImages();
