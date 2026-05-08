@@ -8,6 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use(express.static(__dirname));
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
 app.use("/uploads", express.static("uploads"));
 
 let images = [];
@@ -22,14 +28,20 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 app.post("/api/images", upload.single("image"), (req, res) => {
+
+    if (!req.file) {
+        return res.status(400).json({
+            message: "No image uploaded"
+        });
+    }
 
     const newImage = {
         id: Date.now(),
         title: req.body.title,
-        imageUrl: `http://localhost:5000/uploads/${req.file.filename}`
+        imageUrl: `/uploads/${req.file.filename}`
     };
 
     images.push(newImage);
@@ -73,6 +85,8 @@ app.delete("/api/images/:id", (req, res) => {
     });
 });
 
-app.listen(5000, () => {
-    console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
