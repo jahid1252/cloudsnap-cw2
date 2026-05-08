@@ -8,20 +8,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use(express.static(__dirname));
-app.use("/uploads", express.static("uploads"));
+app.use(express.static(path.join(__dirname)));
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-});
-
-app.get("/index.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-});
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 let images = [];
 
 const storage = multer.diskStorage({
+
     destination: function (req, file, cb) {
         cb(null, "uploads/");
     },
@@ -33,14 +27,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
 app.post("/api/images", upload.single("image"), (req, res) => {
-
-    if (!req.file) {
-
-        return res.status(400).json({
-            message: "No image uploaded"
-        });
-    }
 
     const newImage = {
         id: Date.now(),
