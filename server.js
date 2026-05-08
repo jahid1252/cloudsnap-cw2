@@ -9,12 +9,15 @@ app.use(cors());
 app.use(express.json());
 
 app.use(express.static(__dirname));
+app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
-app.use("/uploads", express.static("uploads"));
+app.get("/index.html", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
 
 let images = [];
 
@@ -33,6 +36,7 @@ const upload = multer({ storage });
 app.post("/api/images", upload.single("image"), (req, res) => {
 
     if (!req.file) {
+
         return res.status(400).json({
             message: "No image uploaded"
         });
@@ -60,6 +64,7 @@ app.put("/api/images/:id", (req, res) => {
     images = images.map(img => {
 
         if (img.id === id) {
+
             return {
                 ...img,
                 title: req.body.title

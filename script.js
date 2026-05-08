@@ -1,86 +1,84 @@
-const express = require("express");
-const multer = require("multer");
-const cors = require("cors");
-const path = require("path");
+const API_URL = "/api/images";
 
-const app = express();
+const form = document.getElementById("uploadForm");
+const imageList = document.getElementById("imageList");
 
-app.use(cors());
-app.use(express.json());
+async function fetchImages() {
 
-app.use(express.static(__dirname));
+    const response = await fetch(API_URL);
+    const images = await response.json();
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-});
+    imageList.innerHTML = "";
 
-app.use("/uploads", express.static("uploads"));
+    images.forEach(image => {
 
-let images = [];
+        const card = document.createElement("div");
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "uploads/");
-    },
+        card.className = "card";
 
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
+        card.innerHTML = `
+            <img src="${image.imageUrl}" width="250">
 
-const upload = multer({ storage: storage });
+            <h3>${image.title}</h3>
 
-app.post("/api/images", upload.single("image"), (req, res) => {
+            <button onclick="editImage(${image.id})">
+                Edit
+            </button>
 
-    const newImage = {
-        id: Date.now(),
-        title: req.body.title,
-        imageUrl: `/uploads/${req.file.filename}`
-    };
+            <button onclick="deleteImage(${image.id})">
+                Delete
+            </button>
+        `;
 
-    images.push(newImage);
+        imageList.appendChild(card);
+    });
+}
 
-    res.json(newImage);
-});
+form.addEventListener("submit", async (e) => {
 
-app.get("/api/images", (req, res) => {
-    res.json(images);
-});
+    e.preventDefault();
 
-app.put("/api/images/:id", (req, res) => {
+    const formData = new FormData(form);
 
-    const id = parseInt(req.params.id);
-
-    images = images.map(img => {
-
-        if (img.id === id) {
-            return {
-                ...img,
-                title: req.body.title
-            };
-        }
-
-        return img;
+    await fetch(API_URL, {
+        method: "POST",
+        body: formData
     });
 
-    res.json({
-        message: "Updated Successfully"
+    form.reset();
+
+    fetchImages();
+});
+
+async function editImage(id) {
+
+    const newTitle = prompt("Enter new title");
+
+    if (!newTitle) return;
+
+    await fetch(`${API_URL}/${id}`, {
+
+        method: "PUT",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            title: newTitle
+        })
     });
-});
 
-app.delete("/api/images/:id", (req, res) => {
+    fetchImages();
+}
 
-    const id = parseInt(req.params.id);
+async function deleteImage(id) {
 
-    images = images.filter(img => img.id !== id);
-
-    res.json({
-        message: "Deleted Successfully"
+    await fetch(`${API_URL}/${id}`, {
+        method: "DELETE"
     });
-});
 
-const PORT = process.env.PORT || 5000;
+    fetchImages();
+}
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+fetchImages();
