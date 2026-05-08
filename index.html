@@ -1,48 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudSnap</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <div class="container">
+    <h1>CloudSnap Image Upload</h1>
 
-        <h1>☁️ CloudSnap Image Upload</h1>
+    <form id="uploadForm">
+        <input type="text" name="title" placeholder="Enter image title" required>
+        <input type="file" name="image" required>
+        <button type="submit">Upload Image</button>
+    </form>
 
-        <form id="uploadForm">
+    <hr>
 
-            <input
-                type="text"
-                id="title"
-                placeholder="Enter image title"
-                required
-            >
-
-            <input
-                type="file"
-                id="image"
-                accept="image/*"
-                required
-            >
-
-            <button type="submit">
-                Upload Image
-            </button>
-
-        </form>
-
-        <div id="imageList"></div>
-
-    </div>
+    <div id="imageList"></div>
 
     <script src="script.js"></script>
 
 </body>
-
 </html>
